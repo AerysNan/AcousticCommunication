@@ -1,5 +1,6 @@
 close all;
 clear;
+clc;
 
 %% encode
 
@@ -10,31 +11,31 @@ sampling_span = 1 / sampling_frequency;
 signal_length = 5000;
 
 sampling_point = 0: sampling_span: (signal_length - 1) * sampling_span;
+preamble = [0 0 0 0 0 0 0 0];
 data = [0 0 0 1 1 0 1 1 1 1 1 0 0 1 0 0];
+data = [preamble, data];
 
 qpsk_length = 2; % qpsk encode per 2 bits
 ofdm_length = 8; % ofdm encode per 8 bits
-n = length(data);
-signal_baseband = zeros(1, signal_length * n / ofdm_length);
-for i = 1: ofdm_length: n
-    segment_data = data(i: i + ofdm_length - 1);
-    segment_output = zeros(1, signal_length);
-    for j = 1: qpsk_length: ofdm_length
-        clip_index = (j - 1) / qpsk_length + 1;
-        clip_frequency = base_frequency * clip_index;
-        clip_data = segment_data(j: j + qpsk_length - 1);
-        clip_output = QPSKEncode(sampling_point, clip_frequency, wave_amplitude, clip_data);
-        segment_output = segment_output + clip_output;
-    end
-    pos = (i - 1) * signal_length / ofdm_length + 1;
-    signal_baseband(pos: pos + signal_length - 1) = segment_output;
-end
+
+signal_baseband_preamble = OFDM(preamble, signal_length, base_frequency,...
+    sampling_point,wave_amplitude, qpsk_length, ofdm_length);
+
+signal_baseband = OFDM(data, signal_length, base_frequency, ...
+    sampling_point,wave_amplitude, qpsk_length, ofdm_length);
+
 
 carrier_frequency = 2000;
 carrier_amplitude = 10;
 carrier_point = 0: sampling_span: (length(signal_baseband) - 1) * sampling_span;
 carrier_wave = carrier_amplitude * cos(2 * pi * carrier_frequency * carrier_point);
-signal_output = signal_baseband .* carrier_wave;
+% signal_output = signal_baseband .* carrier_wave;
+signal_output = Carrier(signal_baseband, sampling_span, ...
+    carrier_amplitude, carrier_frequency);
+
+signal_output_preamble = Carrier(signal_baseband_preamble, ...
+    sampling_span, carrier_amplitude, carrier_frequency);
+
 
 figure(1);
 subplot(2, 1, 1);
@@ -43,23 +44,49 @@ xlabel("Time");
 ylabel("Baseband Signal");
 grid on;
 
+%signal_output = signal_output / max(signal_output);
+signal_output = mapminmax(signal_output); %normalization to [-1.0, 1.0]
 subplot(2, 1, 2);
-plot(carrier_point, signal_output, "LineWidth", 0.5);
+plot(signal_output, "LineWidth", 0.5);
 xlabel("Time");
 ylabel("Output Signal");
 grid on;
 
-%% decode
+%signal_received = awgn(signal_output, 5);
 
-signal_received = awgn(signal_output, 5);
+%% genSound
+fs = 48e3;
+soundFile = 'genSound.wav';
+
+audiowrite(soundFile, signal_output, fs, 'BitsPerSample', 16);
+%sound(signal_output, fs);
+
+%% anaSound
+[signal_received, fs] = audioread(soundFile);
+signal_received = signal_received';
+
+%% insert blank of recording
+signal_blank = rand(1, 1024);
+signal_received = [signal_blank, signal_received];
+
+%% acquire the target signal's position
+[C21,lag21] = xcorr(signal_received, signal_output_preamble);
+C21 = C21/max(C21);
+
+[M21,I21] = max(C21);
+t21 = lag21(I21)+1;
+
+signal_received = signal_received(t21 : end);
 
 figure(2);
 subplot(2, 1, 1);
-plot(carrier_point, signal_received, "LineWidth", 0.5);
+plot(signal_received, "LineWidth", 0.5);
 xlabel("Time");
 ylabel("Received Signal");
 grid on;
 
+
+%% decode
 offset_frequency = 10;
 signal_adjusted = signal_received .* carrier_wave;
 signal_filtered = zeros(1, length(signal_adjusted));
@@ -84,7 +111,7 @@ for i = 1: signal_length: length(signal_adjusted)
 end
 
 subplot(2, 1, 2);
-plot(carrier_point, signal_filtered, "LineWidth", 0.5);
+plot(signal_filtered, "LineWidth", 0.5);
 xlabel("Time");
 ylabel("Filtered Signal");
 grid on;
