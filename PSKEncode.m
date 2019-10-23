@@ -1,6 +1,6 @@
 function output = PSKEncode(t, frequency, amplitude, data)
     psk_length = length(data);
-    n = 2 ^ psk_length;
+    n = 2 ^ psk_length; 
     value = bi2de(data);
     wave_cos = amplitude * cos(2 * pi * frequency * t);
     wave_sin = amplitude * sin(2 * pi * frequency * t);

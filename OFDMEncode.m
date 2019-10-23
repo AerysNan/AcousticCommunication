@@ -4,7 +4,7 @@ function output = OFDMEncode(data, signal_length, base_frequency, sampling_point
     for i = 1: ofdm_length: n
         segment_data = data(i: i + ofdm_length - 1);
         segment_output = zeros(1, signal_length);
-        for j = 1: psk_length: ofdm_length
+        for j   = 1: psk_length: ofdm_length
             clip_index = (j - 1) / psk_length + 1;
             clip_frequency = base_frequency * clip_index;
             clip_data = segment_data(j: j + psk_length - 1);
@@ -15,4 +15,3 @@ function output = OFDMEncode(data, signal_length, base_frequency, sampling_point
         output(pos: pos + signal_length - 1) = segment_output;
     end
 end
-

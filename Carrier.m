@@ -3,4 +3,3 @@ function output = Carrier(signal_baseband, sampling_span, carrier_amplitude, car
     carrier_wave = carrier_amplitude * cos(2 * pi * carrier_frequency * carrier_point);
     output = signal_baseband .* carrier_wave;
 end
-
