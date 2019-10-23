@@ -2,7 +2,7 @@ close all;
 clear;
 clc;
 
-simulate = 1;
+simulate = 0;
 %% anaSound
 
 signal_time = 0.2;
@@ -18,14 +18,13 @@ psk_length = 2; % qpsk encode per 2 bits
 ofdm_length = 8; % ofdm encode per 8 bits
 
 chirp_time = 0.1;
-chirp_frequency = 10000;
+chirp_frequency = 1000;
 chirp_x_axis = 0: sampling_span: chirp_time - sampling_span;
-signal_u_chirp = chirp(chirp_x_axis, 0, chirp_time, chirp_frequency);
-signal_d_chirp = chirp(chirp_x_axis, 0, chirp_time * 2, chirp_frequency / 2);
+signal_u_chirp = chirp(chirp_x_axis, 0, chirp_time * 2, chirp_frequency);
+signal_d_chirp = chirp(chirp_x_axis, 0, chirp_time, chirp_frequency / 2);
 
 zero_time = 0.1;
 signal_zero = zeros(1, zero_time * sampling_frequency);
-signal_baseband = zeros(35280, 1);
     
 if simulate
     soundFile = 'output.wav';
