@@ -9,9 +9,9 @@ signal_time = 0.2;
 sampling_frequency = 44100;
 sampling_span = 1 / sampling_frequency;
 signal_length = sampling_frequency * signal_time;
-base_frequency = 1000;
+base_frequency = 200;
 header_length = 24; % maximum length 2^24 bit = 2 Mb
-carrier_frequency = 10000;
+carrier_frequency = 5000;
 carrier_amplitude = 1;
 
 psk_length = 2; % qpsk encode per 2 bits
@@ -31,19 +31,18 @@ if simulate
     [signal_output, ~] = audioread(soundFile);
     signal_received = awgn(signal_output, 10);
     signal_received = signal_received';
-    signal_received = signal_received(1 + length(signal_u_chirp) + length(signal_zero): end - length(signal_d_chirp) -length(signal_zero));
+    signal_received = signal_received(1 + length(signal_u_chirp): end - length(signal_d_chirp));
 else
     soundFile = 'received.wav';
     [signal_received, fs] = audioread(soundFile);
     signal_received = signal_received';
     [C, lag] = xcorr(signal_received, signal_u_chirp);
     [~, I] = max(C);
-    begin = lag(I) + length(signal_u_chirp) + length(signal_zero);
+    begin = lag(I) + length(signal_u_chirp);
     signal_received = signal_received(begin: end);
     [C, lag] = xcorr(signal_received, signal_d_chirp);
     [~, I] = max(C);
-    finish = lag(I) - length(signal_zero);
-    finish = round(finish / signal_length) * signal_length;
+    finish = round(lag(I) / signal_length) * signal_length;
     signal_received = signal_received(1: finish);
 end
 
