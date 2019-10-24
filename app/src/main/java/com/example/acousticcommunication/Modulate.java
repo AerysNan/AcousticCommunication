@@ -13,21 +13,17 @@ class Modulate {
 
     static double[] Encode(boolean[] data) {
         int length = data.length * SignalRealLength / OFDMLength;
-//        Complex[] content = new Complex[length + HeadChirpLength + TailChirpLength];
-        Complex[] content = new Complex[length];
+        Complex[] content = new Complex[length + HeadChirpLength + TailChirpLength];
         for (int i = 0; i < content.length; i++)
             content[i] = new Complex(0);
         double[] phase = new double[OFDMLength / PSKLength];
         for (int i = 0; i < phase.length; i++)
             phase[i] = Math.PI / 4;
-//        OFDMEncode(data, content, HeadChirpLength, phase);
-        OFDMEncode(data, content, 0, phase);
-//        double[] signal = Carrier(content, HeadChirpLength, length);
-        double[] signal = Carrier(content, 0, length);
-//        Normalize(signal, HeadChirpLength, length);
-        Normalize(signal, 0, length);
-//        Chirp(HeadChirpBeginFrequency, HeadChirpEndFrequency, signal, 0, HeadChirpLength);
-//        Chirp(TailChirpBeginFrequency, TailChirpEndFrequency, signal, length + HeadChirpLength, TailChirpLength);
+        OFDMEncode(data, content, HeadChirpLength, phase);
+        double[] signal = Carrier(content, HeadChirpLength, length);
+        Normalize(signal, HeadChirpLength, length);
+        Chirp(HeadChirpBeginFrequency, HeadChirpEndFrequency, signal, 0, HeadChirpLength);
+        Chirp(TailChirpBeginFrequency, TailChirpEndFrequency, signal, length + HeadChirpLength, TailChirpLength);
         return signal;
     }
 
