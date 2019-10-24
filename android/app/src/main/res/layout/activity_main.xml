@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginLeft="1dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginRight="1dp"
+        android:layout_marginBottom="1dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+
+        <Button
+            android:id="@+id/StartButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Start Record" />
+
+        <Button
+            android:id="@+id/FinishButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Finish Record" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/StorageTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="4"
+                android:text="Directory:"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/StorageEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="textPersonName" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/StatusTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="STOPPED"
+            android:textSize="36sp"
+            android:textStyle="bold" />
+
+        <View
+            android:id="@+id/DividerUp"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000000" />
+
+        <View
+            android:id="@+id/DividerDown"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000000" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/DataTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="4"
+                android:text="Data:"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/DataEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:inputType="textPersonName" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/MakeButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Make Audio" />
+
+        <Button
+            android:id="@+id/PlayButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Play Audio" />
+
+        <com.example.acousticcommunication.CanvasView
+            android:id="@+id/PaintCanvasView"
+            class="com.example.acousticcommunication.CanvasView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColor="#00000000"
+            android:textColorHighlight="#00000000"
+            android:textColorHint="#00000000"
+            android:textColorLink="#00000000" />
+
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -60,13 +60,13 @@ grid on;
 decode_data = zeros(1, ofdm_length * length(signal_received) / 2 / signal_real_length);
 
 phase = repmat(pi / 4, 1, ofdm_length / psk_length);
-for i = 1: 2 * signal_real_length: length(signal_received)
+for i = 1: signal_real_length: length(signal_received)
     clip = signal_received(i: i + signal_real_length - 1);
     clip_carrier = Carrier(clip, sampling_span, carrier_frequency);
     clip_carrier = clip_carrier(1 + header_length: end);
     clip_filtered = BPassFilter(clip_carrier, base_frequency - offset_frequency, max_frequency + offset_frequency, sampling_frequency);
     [decode_clip, phase] = OFDMDecode(clip_filtered, ofdm_length, psk_length, phase);
-    pos = (i - 1) * ofdm_length / 2 / signal_real_length + 1;
+    pos = (i - 1) * ofdm_length / signal_real_length + 1;
     decode_data(pos: pos + ofdm_length - 1) = decode_clip;
 end
 
