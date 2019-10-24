@@ -3,7 +3,7 @@ clear;
 clc;
 
 %% encode
-base_frequency = 500;
+base_frequency = 1000;
 signal_length = 882;
 header_length = 32;
 signal_real_length = signal_length + header_length;
@@ -13,14 +13,18 @@ sampling_span = 1 / sampling_frequency;
 psk_length = 2; % qpsk encode per 2 bits
 ofdm_length = 8; % ofdm encode per 8 bits
 carrier_frequency = 10000;
+check_length = 8;
 
 data = [0 0 0 1 1 0 1 1];
-data = repmat(data, 1, 20);
+data = repmat(data, 1, 10);
+check = zeros(1, 8);
+data = [check data];
 disp(data);
 signal_output = zeros(1, 2 * signal_real_length * length(data) / ofdm_length);
 signal_zero = zeros(1, signal_real_length);
+phase = repmat(pi / 4, 1, ofdm_length / psk_length);
 for i = 1: ofdm_length: length(data)
-    signal_clip = OFDMEncode(data(i: i + ofdm_length - 1), base_frequency, psk_length, ofdm_length, sampling_frequency, signal_length);
+    [signal_clip, phase] = OFDMEncode(data(i: i + ofdm_length - 1), base_frequency, psk_length, ofdm_length, sampling_frequency, signal_length, phase);
     signal_clip = [signal_clip(end - header_length + 1: end) signal_clip];
     signal_clip = Carrier(signal_clip, sampling_span, carrier_frequency);
     pos = (i - 1) / ofdm_length;
