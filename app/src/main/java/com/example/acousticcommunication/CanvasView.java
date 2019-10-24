@@ -26,7 +26,7 @@ public class CanvasView extends View {
         Paint paint = new Paint();
         paint.setColor(Color.BLUE);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(2);
+        paint.setStrokeWidth(1);
         int width = getWidth();
         int height = getHeight();
         double amplitude = height * 0.8 / 2;

@@ -4,6 +4,7 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.util.Log;
 
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +32,10 @@ class Global {
     static final int TailChirpEndFrequency = 1000;
     static final int SignalRealLength = CPLength + SignalLength;
 
+    static final String RawFileName = "raw.wav";
+    static final String OutputFileName = "output.wav";
+    static final String RecordFileName = "record.wav";
+
     static int BitArrayToDecimal(boolean[] data, int b) {
         int value = 0;
         for (int i = b + PSKLength - 1; i >= b; i--)
@@ -40,11 +45,11 @@ class Global {
 
     static boolean[] StringToBitArray(String s) {
         int n = s.length();
-        boolean[] result = new boolean[8 * n];
+        boolean[] result = new boolean[8 * n + 8];
         for (int i = 0; i < n; i++) {
             int value = (int) s.charAt(i);
             for (int j = 0; j < 8; j++) {
-                result[i * 8 + j] = value % 2 == 1;
+                result[i * 8 + j + 8] = value % 2 == 1;
                 value /= 2;
             }
         }
@@ -58,8 +63,8 @@ class Global {
         return stringBuilder.toString();
     }
 
-    static void GenerateAudioFile(double[] data, String name) {
-        File file = new File(name + "output.wav");
+    static void GenerateAudioFile(double[] data, String path) {
+        File file = new File(path + OutputFileName);
         if (file.exists())
             file.delete();
         try {
@@ -94,11 +99,15 @@ class Global {
     }
 
     static void WriteWaveFile(String outFileName, String path) {
+        File file = new File(path + RecordFileName);
+        if (file.exists())
+            file.delete();
         int channels = 1;
         long byteRate = 16 * SamplingRate * channels / 8;
         byte[] data = new byte[BufferSize];
         try {
-            FileInputStream fileInputStream = new FileInputStream(path + "raw.wav");
+            file.createNewFile();
+            FileInputStream fileInputStream = new FileInputStream(path + RawFileName);
             FileOutputStream fileOutputStream = new FileOutputStream(outFileName);
             long audioLength = fileInputStream.getChannel().size();
             long dataLength = audioLength + 36;

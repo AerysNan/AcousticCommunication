@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.media.AudioRecord;
+import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
@@ -23,12 +24,13 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
 
 import static com.example.acousticcommunication.Global.Channel;
 import static com.example.acousticcommunication.Global.Encoding;
 import static com.example.acousticcommunication.Global.GenerateAudioFile;
+import static com.example.acousticcommunication.Global.OutputFileName;
+import static com.example.acousticcommunication.Global.RawFileName;
+import static com.example.acousticcommunication.Global.RecordFileName;
 import static com.example.acousticcommunication.Global.SamplingRate;
 import static com.example.acousticcommunication.Global.BufferSize;
 import static com.example.acousticcommunication.Global.StringToBitArray;
@@ -43,12 +45,16 @@ public class MainActivity extends AppCompatActivity {
     Button StopRecordButton;
     Button PlayAudioButton;
     Button MakeAudioButton;
+    Button ConfirmButton;
     TextView StatusTextView;
     EditText StorageEditText;
     EditText DataEditText;
     CanvasView PaintCanvasView;
 
+    String directory = null;
+
     boolean Recording = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,17 +66,18 @@ public class MainActivity extends AppCompatActivity {
             @SuppressLint("SetTextI18n")
             @Override
             public void onClick(View view) {
+                if (directory == null) {
+                    ShowMessage("Please set the storage directory first.");
+                    return;
+                }
                 StopRecordButton.setEnabled(true);
                 StartRecordButton.setEnabled(false);
                 StatusTextView.setText("RUNNING");
                 Thread thread = new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        String path = StorageEditText.getText().toString();
-                        StartRecord(path);
-                        Date now = Calendar.getInstance().getTime();
-                        String filepath = path + now.toString() + ".wav";
-                        WriteWaveFile(filepath, path);
+                        StartRecord(directory);
+                        WriteWaveFile(directory + RecordFileName, directory);
                     }
                 });
                 thread.start();
@@ -95,13 +102,34 @@ public class MainActivity extends AppCompatActivity {
         PlayAudioButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                MediaPlayer mediaPlayer = new MediaPlayer();
+                try {
+                    mediaPlayer.setDataSource(directory + OutputFileName);
+                    mediaPlayer.prepare();
+                    mediaPlayer.start();
+                } catch (IOException e) {
+                    Log.e("AcousticCommunication", "failed to load audio data source");
+                }
+            }
+        });
+        ConfirmButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                String path = StorageEditText.getText().toString();
+                if (path.charAt(path.length() - 1) != '/')
+                    path += '/';
+                File file = new File(path);
+                if (!file.exists()) {
+                    ShowMessage("Invalid directory name.");
+                    return;
+                }
+                directory = path;
+                ShowMessage("Directory successfully set to" + directory);
             }
         });
     }
 
     void StartRecord(String path) {
-        File file = new File(path + "raw.wav");
+        File file = new File(path + RawFileName);
         if (file.exists())
             file.delete();
         try {
@@ -143,15 +171,24 @@ public class MainActivity extends AppCompatActivity {
                 , new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        if (directory == null) {
+                            ShowMessage("Please set the storage directory first.");
+                            dialog.dismiss();
+                            return;
+                        }
                         String text = DataEditText.getText().toString();
+                        if (text.length() == 0) {
+                            ShowMessage("Please don't send empty message.");
+                            dialog.dismiss();
+                            return;
+                        }
                         DataEditText.setText("");
                         boolean[] data = StringToBitArray(text);
                         Log.i("AcousticCommunication", BitArrayToString(data));
                         dialog.dismiss();
                         double[] signal = Modulate.Encode(data);
                         ShowSignalOnCanvas(signal);
-                        String path = StorageEditText.getText().toString();
-                        GenerateAudioFile(signal, path);
+                        GenerateAudioFile(signal, directory);
                     }
                 });
         dialog.setNegativeButton("No"
@@ -165,14 +202,30 @@ public class MainActivity extends AppCompatActivity {
         dialog.create().show();
     }
 
+    private void ShowMessage(String message) {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle("Notice");
+        dialog.setIcon(R.mipmap.ic_launcher_round);
+        dialog.setMessage(message);
+        dialog.setNegativeButton("OK"
+                , new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+        dialog.create().show();
+    }
+
     void init() {
         setContentView(R.layout.activity_main);
         GetPermission();
 
         StartRecordButton = findViewById(R.id.StartButton);
         StopRecordButton = findViewById(R.id.FinishButton);
-        PlayAudioButton = findViewById(R.id.PlayButton);
-        MakeAudioButton = findViewById(R.id.MakeButton);
+        PlayAudioButton = findViewById(R.id.PlayAudioButton);
+        MakeAudioButton = findViewById(R.id.MakeAudioButton);
+        ConfirmButton = findViewById(R.id.ConfirmButton);
         StatusTextView = findViewById(R.id.StatusTextView);
         StorageEditText = findViewById(R.id.StorageEditText);
         DataEditText = findViewById(R.id.DataEditText);

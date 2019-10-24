@@ -22,39 +22,42 @@
         app:layout_constraintTop_toTopOf="parent">
 
 
-        <Button
-            android:id="@+id/StartButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Start Record" />
-
-        <Button
-            android:id="@+id/FinishButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Finish Record" />
-
         <LinearLayout
+            android:id="@+id/RecordHorizontalLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/StorageTextView"
+                android:id="@+id/RecordTextView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="4"
-                android:text="Directory:"
-                android:textSize="18sp"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:gravity="center|center_vertical"
+                android:text="Record"
+                android:textSize="36sp"
                 android:textStyle="bold" />
 
-            <EditText
-                android:id="@+id/StorageEditText"
+            <LinearLayout
+                android:id="@+id/RecordVerticalView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:ems="10"
-                android:inputType="textPersonName" />
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/FinishButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Finish Record" />
+
+                <Button
+                    android:id="@+id/StartButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Start Record" />
+
+            </LinearLayout>
         </LinearLayout>
 
         <TextView
@@ -72,46 +75,108 @@
             android:layout_height="1dp"
             android:background="#000000" />
 
+        <LinearLayout
+            android:id="@+id/EncodeHorizontalLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/EncodeVerticalLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/MakeAudioButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Make Audio" />
+
+                <Button
+                    android:id="@+id/PlayAudioButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Play Audio" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/DataTextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="4"
+                        android:text="Data:"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <EditText
+                        android:id="@+id/DataEditText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ems="10"
+                        android:inputType="textPersonName" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/EncodeTextView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:gravity="center"
+                android:text="Encode"
+                android:textSize="36sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
         <View
-            android:id="@+id/DividerDown"
+            android:id="@+id/DividerMiddle"
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:background="#000000" />
 
         <LinearLayout
+            android:id="@+id/DirectoryHorizontalLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/DataTextView"
+                android:id="@+id/StorageTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="4"
-                android:text="Data:"
+                android:layout_weight="3"
+                android:text="Directory:"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
             <EditText
-                android:id="@+id/DataEditText"
+                android:id="@+id/StorageEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_weight="2"
                 android:ems="10"
                 android:inputType="textPersonName" />
+
+            <Button
+                android:id="@+id/ConfirmButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:text="Confirm" />
         </LinearLayout>
 
-        <Button
-            android:id="@+id/MakeButton"
+        <View
+            android:id="@+id/DividerDown"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Make Audio" />
-
-        <Button
-            android:id="@+id/PlayButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Play Audio" />
+            android:layout_height="1dp"
+            android:background="#000000" />
 
         <com.example.acousticcommunication.CanvasView
             android:id="@+id/PaintCanvasView"
