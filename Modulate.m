@@ -13,11 +13,11 @@ sampling_span = 1 / sampling_frequency;
 psk_length = 2; % qpsk encode per 2 bits
 ofdm_length = 8; % ofdm encode per 8 bits
 carrier_frequency = 10000;
-check_length = 8;
+check_length = ofdm_length;
 
 data = [0 0 0 1 1 0 1 1];
 data = repmat(data, 1, 10);
-check = zeros(1, 8);
+check = zeros(1, check_length);
 data = [check data];
 disp(data);
 signal_output = zeros(1, 2 * signal_real_length * length(data) / ofdm_length);

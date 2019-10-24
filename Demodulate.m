@@ -14,7 +14,7 @@ sampling_span = 1 / sampling_frequency;
 psk_length = 2; % qpsk encode per 2 bits
 ofdm_length = 8; % ofdm encode per 8 bits
 carrier_frequency = 10000;
-check_length = 8;
+check_length = ofdm_length;
 
 chirp_u_time = 0.2;
 chirp_u_begin_frequency = 200;
