@@ -12,19 +12,22 @@ import android.view.View;
 public class CanvasView extends View {
 
     double[] signal;
+    int color;
 
     public CanvasView(Context context) {
         super(context);
+        color = Color.BLUE;
     }
 
     public CanvasView(Context context, AttributeSet attributeSet) {
         super(context, attributeSet);
+        color = Color.BLUE;
     }
 
     @Override
     public void onDraw(Canvas canvas) {
         Paint paint = new Paint();
-        paint.setColor(Color.BLUE);
+        paint.setColor(color);
         paint.setStyle(Paint.Style.STROKE);
         paint.setStrokeWidth(1);
         int width = getWidth();

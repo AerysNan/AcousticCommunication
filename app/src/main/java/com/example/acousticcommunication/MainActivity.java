@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.Color;
 import android.media.AudioRecord;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -25,16 +26,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import static com.example.acousticcommunication.Global.BufferSize;
 import static com.example.acousticcommunication.Global.Channel;
 import static com.example.acousticcommunication.Global.Encoding;
-import static com.example.acousticcommunication.Global.GenerateAudioFile;
 import static com.example.acousticcommunication.Global.OutputFileName;
 import static com.example.acousticcommunication.Global.RawFileName;
 import static com.example.acousticcommunication.Global.RecordFileName;
 import static com.example.acousticcommunication.Global.SamplingRate;
-import static com.example.acousticcommunication.Global.BufferSize;
-import static com.example.acousticcommunication.Global.StringToBitArray;
-import static com.example.acousticcommunication.Global.BitArrayToString;
+import static com.example.acousticcommunication.Global.ReadWaveFile;
+import static com.example.acousticcommunication.Global.GenerateAudioFile;
 import static com.example.acousticcommunication.Global.WriteWaveFile;
 
 @SuppressLint("SetTextI18n")
@@ -43,6 +43,7 @@ import static com.example.acousticcommunication.Global.WriteWaveFile;
 public class MainActivity extends AppCompatActivity {
     Button StartRecordButton;
     Button StopRecordButton;
+    Button DecodeRecordButton;
     Button PlayAudioButton;
     Button MakeAudioButton;
     Button ConfirmButton;
@@ -92,16 +93,43 @@ public class MainActivity extends AppCompatActivity {
                 StatusTextView.setText("STOPPED");
             }
         });
+        DecodeRecordButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (directory == null) {
+                    ShowMessage("Please set the storage directory first.");
+                    return;
+                }
+                File file = new File(directory + OutputFileName);
+                if (!file.exists()) {
+                    ShowMessage("Audio file not found.");
+                    return;
+                }
+                try {
+                    double[] signal = ReadWaveFile(directory + OutputFileName);
+                    PaintCanvasView.signal = signal;
+                    PaintCanvasView.color = Color.RED;
+                    PaintCanvasView.invalidate();
+                    ShowMessage("Decoded data \"" + Demodulate.Decode(signal) + "\"");
+                } catch (IOException e) {
+                    Log.e("AcousticCommunication", "read record file failed");
+                }
+            }
+        });
         MakeAudioButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String text = DataEditText.getText().toString();
-                ShowDialog("Confirmation", "Confirm to encode data \"" + text + "\"?");
+                ShowConfirmDialog("Confirmation", "Confirm to encode data \"" + text + "\"?");
             }
         });
         PlayAudioButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (directory == null) {
+                    ShowMessage("Please set the storage directory first.");
+                    return;
+                }
                 MediaPlayer mediaPlayer = new MediaPlayer();
                 try {
                     mediaPlayer.setDataSource(directory + OutputFileName);
@@ -162,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
         PaintCanvasView.invalidate();
     }
 
-    private void ShowDialog(String title, String message) {
+    private void ShowConfirmDialog(String title, String message) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(this);
         dialog.setTitle(title);
         dialog.setIcon(R.mipmap.ic_launcher_round);
@@ -182,11 +210,9 @@ public class MainActivity extends AppCompatActivity {
                             dialog.dismiss();
                             return;
                         }
-                        DataEditText.setText("");
-                        boolean[] data = StringToBitArray(text);
-                        Log.i("AcousticCommunication", BitArrayToString(data));
                         dialog.dismiss();
-                        double[] signal = Modulate.Encode(data);
+                        double[] signal = Modulate.Encode(text);
+                        PaintCanvasView.color = Color.BLUE;
                         ShowSignalOnCanvas(signal);
                         GenerateAudioFile(signal, directory);
                     }
@@ -225,6 +251,7 @@ public class MainActivity extends AppCompatActivity {
         StopRecordButton = findViewById(R.id.FinishButton);
         PlayAudioButton = findViewById(R.id.PlayAudioButton);
         MakeAudioButton = findViewById(R.id.MakeAudioButton);
+        DecodeRecordButton = findViewById(R.id.DecodeButton);
         ConfirmButton = findViewById(R.id.ConfirmButton);
         StatusTextView = findViewById(R.id.StatusTextView);
         StorageEditText = findViewById(R.id.StorageEditText);

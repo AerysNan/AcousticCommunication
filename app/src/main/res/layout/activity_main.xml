@@ -57,6 +57,12 @@
                     android:layout_height="wrap_content"
                     android:text="Start Record" />
 
+                <Button
+                    android:id="@+id/DecodeButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Decode Record" />
+
             </LinearLayout>
         </LinearLayout>
 

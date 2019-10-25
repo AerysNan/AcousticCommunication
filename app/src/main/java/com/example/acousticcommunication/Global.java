@@ -13,19 +13,20 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 class Global {
-    static final int SamplingRate = 44100;
+    static final int SamplingRate = 40960;
     static final int Channel = AudioFormat.CHANNEL_IN_MONO;
     static final int Encoding = AudioFormat.ENCODING_PCM_16BIT;
     static final int BufferSize = AudioRecord.getMinBufferSize(SamplingRate, Channel, Encoding);
 
-    static final int SignalLength = 882;
-    static final int BaseFrequency = 500;
+    static final int SignalLength = 1024;
+    static final int BaseFrequency = 1000;
+    static final int OffsetFrequency = 10;
     static final int CarrierFrequency = 5000;
     static final int PSKLength = 2;
     static final int OFDMLength = 8;
     static final int CPLength = 32;
-    static final int HeadChirpLength = 882;
-    static final int TailChirpLength = 441;
+    static final int HeadChirpLength = 1024;
+    static final int TailChirpLength = 512;
     static final int HeadChirpBeginFrequency = 200;
     static final int HeadChirpEndFrequency = 600;
     static final int TailChirpBeginFrequency = 600;
@@ -34,13 +35,29 @@ class Global {
 
     static final String RawFileName = "raw.wav";
     static final String OutputFileName = "output.wav";
-    static final String RecordFileName = "record.wav";
+    static final String RecordFileName = "received.wav";
 
     static int BitArrayToDecimal(boolean[] data, int b) {
         int value = 0;
         for (int i = b + PSKLength - 1; i >= b; i--)
             value = value * 2 + (data[i] ? 1 : 0);
         return value;
+    }
+
+    static void DecimalToBitArray(boolean[] data, int b, int value) {
+        for (int i = b; i < b + PSKLength; i++) {
+            data[i] = value % 2 == 1;
+            value /= 2;
+        }
+    }
+
+    private static double[] ByteArrayToDoubleArray(byte[] b) {
+        double[] result = new double[b.length / 2];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = ((short) b[2 * i + 1] << 8) | ((short) b[2 * i] & 0xff);
+            result[i] /= Short.MAX_VALUE;
+        }
+        return result;
     }
 
     static boolean[] StringToBitArray(String s) {
@@ -58,8 +75,14 @@ class Global {
 
     static String BitArrayToString(boolean[] value) {
         StringBuilder stringBuilder = new StringBuilder();
-        for (boolean b : value)
-            stringBuilder.append(b ? 1 : 0);
+        for (int i = 8; i < value.length; i += 8) {
+            int number = 0;
+            for (int j = 7; j >= 0; j--) {
+                number <<= 1;
+                number += value[i + j] ? 1 : 0;
+            }
+            stringBuilder.append((char) number);
+        }
         return stringBuilder.toString();
     }
 
@@ -98,7 +121,7 @@ class Global {
         }
     }
 
-    static void WriteWaveFile(String outFileName, String path) {
+    static void WriteWaveFile(String name, String path) {
         File file = new File(path + RecordFileName);
         if (file.exists())
             file.delete();
@@ -108,7 +131,7 @@ class Global {
         try {
             file.createNewFile();
             FileInputStream fileInputStream = new FileInputStream(path + RawFileName);
-            FileOutputStream fileOutputStream = new FileOutputStream(outFileName);
+            FileOutputStream fileOutputStream = new FileOutputStream(name);
             long audioLength = fileInputStream.getChannel().size();
             long dataLength = audioLength + 36;
             WriteWaveFileHeader(fileOutputStream, audioLength, dataLength, (long) SamplingRate, channels, byteRate);
@@ -121,6 +144,19 @@ class Global {
         } catch (IOException e) {
             Log.e("AcousticCommunication", "write wave file failed");
         }
+    }
+
+    static double[] ReadWaveFile(String name) throws IOException {
+        FileInputStream fileInputStream = new FileInputStream(name);
+        byte[] chunk = new byte[4];
+        for (int i = 0; i < 11; i++)
+            fileInputStream.read(chunk);
+        long size = 0;
+        for (int i = 3; i >= 0; i--)
+            size = (size << 8) | (chunk[i] & 0xff);
+        byte[] content = new byte[(int) size];
+        fileInputStream.read(content);
+        return ByteArrayToDoubleArray(content);
     }
 
     private static void WriteWaveFileHeader(FileOutputStream fileOutputStream, long audioLength,

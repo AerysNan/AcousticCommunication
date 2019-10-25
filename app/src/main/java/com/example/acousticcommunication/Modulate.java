@@ -4,6 +4,8 @@ import org.apache.commons.math3.analysis.function.Cos;
 import org.apache.commons.math3.analysis.function.Sin;
 import org.apache.commons.math3.complex.Complex;
 
+import java.util.Arrays;
+
 import static com.example.acousticcommunication.Global.*;
 
 class Modulate {
@@ -11,14 +13,13 @@ class Modulate {
     private static Cos cos = new Cos();
     private static Sin sin = new Sin();
 
-    static double[] Encode(boolean[] data) {
+    static double[] Encode(String message) {
+        boolean[] data = StringToBitArray(message);
         int length = data.length * SignalRealLength / OFDMLength;
         Complex[] content = new Complex[length + HeadChirpLength + TailChirpLength];
-        for (int i = 0; i < content.length; i++)
-            content[i] = new Complex(0);
+        Arrays.fill(content, new Complex(0));
         double[] phase = new double[OFDMLength / PSKLength];
-        for (int i = 0; i < phase.length; i++)
-            phase[i] = Math.PI / 4;
+        Arrays.fill(phase, Math.PI / 4);
         OFDMEncode(data, content, HeadChirpLength, phase);
         double[] signal = Carrier(content, HeadChirpLength, length);
         Normalize(signal, HeadChirpLength, length);
@@ -56,9 +57,9 @@ class Modulate {
     }
 
     private static void Normalize(double[] data, int b, int length) {
-        double max = -1;
+        double max = 0;
         for (int i = b; i < b + length; i++)
-            max = Math.max(max, data[i]);
+            max = Math.max(max, Math.abs(data[i]));
         for (int i = b; i < b + length; i++)
             data[i] /= max;
     }
