@@ -19,7 +19,7 @@ class Global {
     static final int BufferSize = AudioRecord.getMinBufferSize(SamplingRate, Channel, Encoding);
 
     static final int SignalLength = 1024;
-    static final int BaseFrequency = 1000;
+    static final int BaseFrequency = 400;
     static final int OffsetFrequency = 10;
     static final int CarrierFrequency = 5000;
     static final int PSKLength = 2;

@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
+import android.icu.util.Output;
 import android.media.AudioRecord;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -51,10 +52,22 @@ public class MainActivity extends AppCompatActivity {
     EditText StorageEditText;
     EditText DataEditText;
     CanvasView PaintCanvasView;
+    MediaPlayer mediaPlayer;
 
     String directory = null;
 
     boolean Recording = false;
+
+
+    private MediaPlayer.OnCompletionListener onCompletionListener = new MediaPlayer.OnCompletionListener() {
+        @Override
+        public void onCompletion(MediaPlayer m) {
+            if (mediaPlayer == null)
+                return;
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
         StatusTextView.setText("STOPPED");
         StopRecordButton.setEnabled(false);
+        DecodeRecordButton.setEnabled(false);
         StartRecordButton.setOnClickListener(new View.OnClickListener() {
             @SuppressLint("SetTextI18n")
             @Override
@@ -100,17 +114,18 @@ public class MainActivity extends AppCompatActivity {
                     ShowMessage("Please set the storage directory first.");
                     return;
                 }
-                File file = new File(directory + OutputFileName);
+                File file = new File(directory + RecordFileName);
                 if (!file.exists()) {
                     ShowMessage("Audio file not found.");
                     return;
                 }
                 try {
-                    double[] signal = ReadWaveFile(directory + OutputFileName);
+                    double[] signal = ReadWaveFile(directory + RecordFileName);
                     PaintCanvasView.signal = signal;
                     PaintCanvasView.color = Color.RED;
                     PaintCanvasView.invalidate();
                     ShowMessage("Decoded data \"" + Demodulate.Decode(signal) + "\"");
+                    DecodeRecordButton.setEnabled(false);
                 } catch (IOException e) {
                     Log.e("AcousticCommunication", "read record file failed");
                 }
@@ -130,9 +145,10 @@ public class MainActivity extends AppCompatActivity {
                     ShowMessage("Please set the storage directory first.");
                     return;
                 }
-                MediaPlayer mediaPlayer = new MediaPlayer();
                 try {
+                    mediaPlayer = new MediaPlayer();
                     mediaPlayer.setDataSource(directory + OutputFileName);
+                    mediaPlayer.setOnCompletionListener(onCompletionListener);
                     mediaPlayer.prepare();
                     mediaPlayer.start();
                 } catch (IOException e) {
@@ -154,6 +170,7 @@ public class MainActivity extends AppCompatActivity {
                 ShowMessage("Directory successfully set to" + directory);
             }
         });
+        mediaPlayer = new MediaPlayer();
     }
 
     void StartRecord(String path) {
@@ -180,6 +197,7 @@ public class MainActivity extends AppCompatActivity {
             }
             audioRecord.stop();
             dataOutputStream.close();
+            DecodeRecordButton.setEnabled(true);
         } catch (Throwable t) {
             Log.e("AcousticCommunication", "record failed");
         }
@@ -221,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
                 , new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        DataEditText.setText("");
                         DataEditText.setText("");
                         dialog.dismiss();
                     }

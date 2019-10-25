@@ -37,8 +37,8 @@ class Demodulate {
         double[] beginChirp = Chirp(HeadChirpBeginFrequency, HeadChirpEndFrequency, HeadChirpLength);
         int beginIndex = ShiftPosition(data, 0, beginChirp) + HeadChirpLength;
         double[] endChirp = Chirp(TailChirpBeginFrequency, TailChirpEndFrequency, TailChirpLength);
-        int endIndex = ShiftPosition(data, HeadChirpLength, endChirp);
-        endIndex = beginIndex + Math.round((endIndex - beginIndex) / SignalRealLength) * SignalRealLength;
+        int endIndex = ShiftPosition(data, beginIndex, endChirp);
+        endIndex = (int) (beginIndex + Math.round(((double) (endIndex - beginIndex) / SignalRealLength)) * SignalRealLength);
         int signalCount = (endIndex - beginIndex) / SignalRealLength;
         boolean[] decoded = new boolean[signalCount * OFDMLength];
         OFDMDecode(data, beginIndex, endIndex, decoded);

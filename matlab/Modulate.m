@@ -3,7 +3,7 @@ clear;
 clc;
 
 %% encode
-base_frequency = 1000;
+base_frequency = 400;
 signal_length = 1024;
 header_length = 32;
 signal_real_length = signal_length + header_length;

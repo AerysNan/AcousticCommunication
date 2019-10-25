@@ -4,7 +4,7 @@ clc;
 
 simulate = input("Run in simulate mode: ");
 %% anaSound
-base_frequency = 1000;
+base_frequency = 400;
 signal_length = 1024;
 header_length = 32;
 signal_real_length = signal_length + header_length;
@@ -30,7 +30,7 @@ signal_d_chirp = chirp(0: sampling_span: chirp_d_time - sampling_span, chirp_d_b
 if simulate
     soundFile = 'output.wav';
     [signal_received, fs] = audioread(soundFile);
-%    signal_received = awgn(signal_received, 10);
+    signal_received = awgn(signal_received, 10);
     signal_received = signal_received(:, 1);
     signal_received = signal_received';
     signal_received = signal_received(1 + chirp_u_length: end - chirp_d_length);
