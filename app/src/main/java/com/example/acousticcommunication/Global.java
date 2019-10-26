@@ -113,34 +113,10 @@ class Global {
             while (byteArrayInputStream.read(buffer) != -1)
                 fileOutputStream.write(buffer);
             byteArrayInputStream.close();
+            fileOutputStream.flush();
             fileOutputStream.close();
         } catch (FileNotFoundException e) {
             Log.e("AcousticCommunication", "output file not found");
-        } catch (IOException e) {
-            Log.e("AcousticCommunication", "write wave file failed");
-        }
-    }
-
-    static void WriteWaveFile(String name, String path) {
-        File file = new File(path + RecordFileName);
-        if (file.exists())
-            file.delete();
-        int channels = 1;
-        long byteRate = 16 * SamplingRate * channels / 8;
-        byte[] data = new byte[BufferSize];
-        try {
-            file.createNewFile();
-            FileInputStream fileInputStream = new FileInputStream(path + RawFileName);
-            FileOutputStream fileOutputStream = new FileOutputStream(name);
-            long audioLength = fileInputStream.getChannel().size();
-            long dataLength = audioLength + 36;
-            WriteWaveFileHeader(fileOutputStream, audioLength, dataLength, (long) SamplingRate, channels, byteRate);
-            while (fileInputStream.read(data) != -1)
-                fileOutputStream.write(data);
-            fileInputStream.close();
-            fileOutputStream.close();
-        } catch (FileNotFoundException e) {
-            Log.e("AcousticCommunication", "audio file not found");
         } catch (IOException e) {
             Log.e("AcousticCommunication", "write wave file failed");
         }
@@ -159,8 +135,8 @@ class Global {
         return ByteArrayToDoubleArray(content);
     }
 
-    private static void WriteWaveFileHeader(FileOutputStream fileOutputStream, long audioLength,
-                                            long dataLength, long sampleRate, int channels, long byteRate)
+    static void WriteWaveFileHeader(FileOutputStream fileOutputStream, long audioLength,
+                                    long dataLength, long sampleRate, int channels, long byteRate)
             throws IOException {
         byte[] header = new byte[44];
         header[0] = 'R';

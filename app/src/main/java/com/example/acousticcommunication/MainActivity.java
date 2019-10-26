@@ -5,18 +5,20 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.graphics.Color;
-import android.icu.util.Output;
 import android.media.AudioRecord;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -24,6 +26,8 @@ import androidx.core.app.ActivityCompat;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -36,7 +40,7 @@ import static com.example.acousticcommunication.Global.RecordFileName;
 import static com.example.acousticcommunication.Global.SamplingRate;
 import static com.example.acousticcommunication.Global.ReadWaveFile;
 import static com.example.acousticcommunication.Global.GenerateAudioFile;
-import static com.example.acousticcommunication.Global.WriteWaveFile;
+import static com.example.acousticcommunication.Global.WriteWaveFileHeader;
 
 @SuppressLint("SetTextI18n")
 @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -54,8 +58,16 @@ public class MainActivity extends AppCompatActivity {
     CanvasView PaintCanvasView;
     MediaPlayer mediaPlayer;
 
-    String directory = null;
+    Handler handler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(@NonNull Message msg) {
+            DecodeRecordButton.setEnabled(true);
+            ShowMessage("Write wave file finished.");
+            return false;
+        }
+    });
 
+    String directory = null;
     boolean Recording = false;
 
 
@@ -196,12 +208,40 @@ public class MainActivity extends AppCompatActivity {
                     dataOutputStream.write(buffer[i]);
             }
             audioRecord.stop();
+            dataOutputStream.flush();
             dataOutputStream.close();
-            DecodeRecordButton.setEnabled(true);
         } catch (Throwable t) {
             Log.e("AcousticCommunication", "record failed");
         }
     }
+
+    private void WriteWaveFile(String name, String path) {
+        File file = new File(path + RecordFileName);
+        if (file.exists())
+            file.delete();
+        int channels = 1;
+        long byteRate = 16 * SamplingRate * channels / 8;
+        byte[] data = new byte[BufferSize];
+        try {
+            file.createNewFile();
+            FileInputStream fileInputStream = new FileInputStream(path + RawFileName);
+            FileOutputStream fileOutputStream = new FileOutputStream(name);
+            long audioLength = fileInputStream.getChannel().size();
+            long dataLength = audioLength + 36;
+            WriteWaveFileHeader(fileOutputStream, audioLength, dataLength, (long) SamplingRate, channels, byteRate);
+            while (fileInputStream.read(data) != -1)
+                fileOutputStream.write(data);
+            fileInputStream.close();
+            fileOutputStream.flush();
+            fileOutputStream.close();
+            handler.sendEmptyMessage(0);
+        } catch (FileNotFoundException e) {
+            Log.e("AcousticCommunication", "audio file not found");
+        } catch (IOException e) {
+            Log.e("AcousticCommunication", "write wave file failed");
+        }
+    }
+
 
     private void ShowSignalOnCanvas(double[] signal) {
         PaintCanvasView.signal = signal;
@@ -239,7 +279,6 @@ public class MainActivity extends AppCompatActivity {
                 , new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        DataEditText.setText("");
                         DataEditText.setText("");
                         dialog.dismiss();
                     }
